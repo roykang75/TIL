@@ -1,0 +1,12 @@
+[project]
+name = "til"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.13",
+    "passlib[bcrypt]>=1.7.4",
+    "py-ulid>=1.0.3",
+    "uvicorn>=0.34.3",
+]
