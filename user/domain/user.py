@@ -9,7 +9,8 @@ class Profile:
 @dataclass
 class User:
     id: str
-    profile: Profile
+    name: str
+    email: str
     password: str
     created_at: datetime
     updated_at: datetime

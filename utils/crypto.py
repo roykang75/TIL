@@ -4,7 +4,7 @@ class Crypto:
   def __init__(self):
     self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-  def hash(self, secret: str) -> str:
+  def encrypt(self, secret: str) -> str:
     return self.pwd_context.hash(secret)
   
   def verify(self, secret: str, hash: str) -> bool:

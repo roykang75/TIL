@@ -7,7 +7,7 @@ from user.infra.repository.user_repo import UserRepository
 from utils.crypto import Crypto
 
 class UserService:
-  def __init__(self, user_repo: IUserRepository):
+  def __init__(self):
     self.user_repo: IUserRepository = UserRepository()
     self.ulid = ULID()
     self.crypto = Crypto()
@@ -25,11 +25,11 @@ class UserService:
       raise HTTPException(status_code=422)
     
     now = datetime.now()
-    user = User = User(
+    user: User = User(
       id=self.ulid.generate(),
       name=name,
       email=email,
-      password=self.crypto.hash(password),
+      password=self.crypto.encrypt(password),
       created_at=now,
       updated_at=now,
     )
