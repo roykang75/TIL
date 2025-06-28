@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from containers import Container
 from user.application.user_service import UserService
 from user.domain.user import UserResponse
@@ -9,15 +9,15 @@ router = APIRouter(prefix="/users")
 
 
 class CreateUserBody(BaseModel):
-    name: str
-    email: str
-    password: str
-    memo: str | None
+    name: str = Field(min_length=2, max_length=32)
+    email: EmailStr = Field(min_length=6, max_length=64)
+    password: str = Field(min_length=8, max_length=32)
+    memo: str | None = None
 
 
 class UpdateUser(BaseModel):
-    name: str | None = None
-    password: str | None = None
+    name: str | None = Field(min_length=2, max_length=32, default=None)
+    password: str | None = Field(min_length=8, max_length=32, default=None)
 
 
 class UsersResponse(BaseModel):
