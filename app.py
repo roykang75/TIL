@@ -8,6 +8,7 @@ from containers import Container
 app = FastAPI()
 container = Container()
 app.container = container
+container.wire(modules=["user.interface.controller.user_controller"])
 
 app.include_router(user_routers)
 
