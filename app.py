@@ -3,8 +3,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.requests import Request
 from user.interface.controller.user_controller import router as user_routers
+from containers import Container
 
 app = FastAPI()
+container = Container()
+app.container = container
 
 app.include_router(user_routers)
 

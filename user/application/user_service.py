@@ -1,18 +1,23 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from ulid import ULID
 from datetime import datetime
-from user.domain.user import User
+from user.domain.user import User, UserResponse
 from user.domain.repository.user_repo import IUserRepository
 from user.infra.repository.user_repo import UserRepository
 from utils.crypto import Crypto
+from dependency_injector.wiring import inject, Provide
 
 class UserService:
-  def __init__(self):
-    self.user_repo: IUserRepository = UserRepository()
+  @inject
+  def __init__(
+      self, 
+      user_repo: IUserRepository = Provide["user_repo"]
+  ):
+    self.user_repo = user_repo
     self.ulid = ULID()
     self.crypto = Crypto()
 
-  def create_user(self, name: str, email: str, password: str):
+  def create_user(self, name: str, email: str, password: str) -> UserResponse:
     _user = None
     
     try:
@@ -35,4 +40,10 @@ class UserService:
     )
     self.user_repo.save(user)
 
-    return user
+    return UserResponse(
+      id=user.id,
+      name=user.name,
+      email=user.email,
+      created_at=user.created_at,
+      updated_at=user.updated_at
+    )
