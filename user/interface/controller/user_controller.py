@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from user.domain.repository.application.user_service import UserService
+from user.application.user_service import UserService
 
 router = APIRouter(prefix="/users")
 #@router.post("", status_code=201)
