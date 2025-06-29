@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 from containers import Container
 from user.application.user_service import UserService
 from dependency_injector.wiring import inject, Provide
+from common.auth import get_current_user, CurrentUser
 
 router = APIRouter(prefix="/users")
 
@@ -17,7 +18,7 @@ class CreateUserBody(BaseModel):
     memo: str | None = None
 
 
-class UpdateUser(BaseModel):
+class UpdateUserBody(BaseModel):
     name: str | None = Field(min_length=2, max_length=32, default=None)
     password: str | None = Field(min_length=8, max_length=32, default=None)
 
@@ -51,11 +52,13 @@ def create_user(
 @router.put("/{user_id}", response_model=UserResponse)
 @inject
 def update_user(
-    user_id: str,
-    user: UpdateUser,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
+    body: UpdateUserBody,
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
-    updated_user = user_service.update_user(user_id, user.name, user.password)
+    updated_user = user_service.update_user(
+        user_id=current_user.id, name=body.name, password=body.password
+    )
     return updated_user
 
 
@@ -77,17 +80,19 @@ def get_users(
 @router.delete("/{user_id}", status_code=204)
 @inject
 def delete_user(
-    user_id: str,
+    current_user: Annotated[CurrentUser, Depends(get_current_user)],
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
-    user_service.delete_user(user_id)
+    user_service.delete_user(current_user.id)
+
 
 @router.post("/login")
 @inject
 def login(
-        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-        user_service: UserService = Depends(Provide[Container.user_service]),
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_service: UserService = Depends(Provide[Container.user_service]),
 ):
-    access_token = user_service.login(email=form_data.username, password=form_data.password)
+    access_token = user_service.login(
+        email=form_data.username, password=form_data.password
+    )
     return {"access_token": access_token, "token_type": "bearer"}
-

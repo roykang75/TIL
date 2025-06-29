@@ -6,8 +6,9 @@ from user.domain.repository.user_repo import IUserRepository
 from user.infra.repository.user_repo import UserRepository
 from utils.crypto import Crypto
 from dependency_injector.wiring import inject, Provide
-from common.auth import create_access_token
+from common.auth import Role, create_access_token
 from fastapi import status
+
 
 class UserService:
     @inject
@@ -16,9 +17,7 @@ class UserService:
         self.ulid = ULID()
         self.crypto = Crypto()
 
-    def create_user(
-        self, name: str, email: str, password: str, memo: str | None
-    ):
+    def create_user(self, name: str, email: str, password: str, memo: str | None):
         _user = None
 
         try:
@@ -44,9 +43,7 @@ class UserService:
 
         return user
 
-    def update_user(
-        self, user_id: str, name: str | None, password: str | None
-    ):
+    def update_user(self, user_id: str, name: str | None, password: str | None):
         user = self.user_repo.find_by_id(user_id)
 
         if name:
@@ -60,12 +57,9 @@ class UserService:
 
         return user
 
-    def get_users(
-        self, page: int, items_per_page: int
-    ) -> tuple[int, list[User]]:
+    def get_users(self, page: int, items_per_page: int) -> tuple[int, list[User]]:
         users = self.user_repo.get_users(page, items_per_page)
         return users
-    
 
     def delete_user(self, user_id: str) -> bool:
         return self.user_repo.delete(user_id)
@@ -74,9 +68,10 @@ class UserService:
         user = self.user_repo.find_by_email(email)
 
         if not self.crypto.verify(password, user.password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
 
-        access_token = create_access_token({"user_id": user.id})
+        access_token = create_access_token(payload={"user_id": user.id}, role=Role.USER)
+
         return access_token
-    
-

@@ -1,14 +1,30 @@
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
+from enum import StrEnum
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+
 
 SECRET_KEY = "09d25e094faa6ca25567"
 ALGORITHM = "HS256"
 
+class Role(StrEnum):
+    ADMIN = "ADMIN"
+    USER = "USER"
 
-def create_access_token(payload: dict, expires_delta: timedelta = timedelta(hours=6)):
+
+def create_access_token(payload: dict, role: Role, expires_delta: timedelta = timedelta(hours=6)):
     expire = datetime.utcnow() + expires_delta
-    payload.update({"exp": expire})
+    payload.update(
+        {
+          "role": role,
+          "exp": expire
+        }
+    )
     encoded_jwt = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
     return encoded_jwt
@@ -23,3 +39,19 @@ def decode_token(token: str):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
+
+@dataclass
+class CurrentUser:
+    id: str
+    role: Role
+
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    payload = decode_token(token)
+
+    user_id = payload.get("user_id")
+    role = payload.get("role")
+
+    if not user_id or not role or role != Role.USER:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return CurrentUser(user_id, role)
