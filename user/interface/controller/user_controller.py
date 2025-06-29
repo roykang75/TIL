@@ -65,7 +65,11 @@ def get_users(
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
     total_count, users = user_service.get_users(page, items_per_page)
-    return GetUsersResponse(total_count=total_count, page=page, users=users)
+    return {
+        "total_count": total_count,
+        "page": page,
+        "users": users,
+    }
 
 
 @router.delete("/{user_id}", status_code=204)
