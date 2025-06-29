@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Annotated
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr, Field
 from containers import Container
@@ -79,3 +81,13 @@ def delete_user(
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
     user_service.delete_user(user_id)
+
+@router.post("/login")
+@inject
+def login(
+        form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+        user_service: UserService = Depends(Provide[Container.user_service]),
+):
+    access_token = user_service.login(email=form_data.username, password=form_data.password)
+    return {"access_token": access_token, "token_type": "bearer"}
+
