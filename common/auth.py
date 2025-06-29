@@ -30,7 +30,7 @@ def create_access_token(payload: dict, role: Role, expires_delta: timedelta = ti
     return encoded_jwt
 
 
-def decode_token(token: str):
+def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
@@ -46,7 +46,7 @@ class CurrentUser:
     role: Role
 
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    payload = decode_token(token)
+    payload = decode_access_token(token)
 
     user_id = payload.get("user_id")
     role = payload.get("role")
@@ -55,3 +55,14 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     return CurrentUser(user_id, role)
+
+def get_admin_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    payload = decode_access_token(token)
+
+    user_id = payload.get("user_id")
+    role = payload.get("role")
+
+    if not user_id or not role or role != Role.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    return CurrentUser("ADMIN_USEDR_ID", role)
