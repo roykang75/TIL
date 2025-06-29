@@ -7,6 +7,7 @@ from user.infra.repository.user_repo import UserRepository
 from utils.crypto import Crypto
 from dependency_injector.wiring import inject, Provide
 from common.auth import Role, create_access_token
+from common.logger import logger
 from fastapi import status
 
 
@@ -23,11 +24,13 @@ class UserService:
         try:
             _user = self.user_repo.find_by_email(email)
         except HTTPException as e:
+            logger.error(f"Error finding user by email: {e}")
             if e.status_code != 422:
                 raise e
 
         if _user:
-            raise HTTPException(status_code=422)
+            logger.info(f"User already exists: {_user}")
+            raise HTTPException(status_code=422, detail="User already exists")
 
         now = datetime.now()
         user: User = User(

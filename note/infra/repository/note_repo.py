@@ -38,7 +38,7 @@ class NoteRepository(INoteRepository):
                 .first()
             )
             if not note:
-                raise HTTPException(status_code=422)
+                raise HTTPException(status_code=422, detail="Note not found")
 
             return NoteVO(**row_to_dict(note))
 
@@ -80,7 +80,7 @@ class NoteRepository(INoteRepository):
                 .first()
             )
             if not note:
-                raise HTTPException(status_code=422)
+                raise HTTPException(status_code=422, detail="Note not found")
 
             note.title = note_vo.title
             note.content = note_vo.content
@@ -110,7 +110,7 @@ class NoteRepository(INoteRepository):
         with SessionLocal() as db:
             note = db.query(Note).filter(Note.user_id == user_id, Note.id == id).first()
             if not note:
-                raise HTTPException(status_code=422)
+                raise HTTPException(status_code=422, detail="Note not found")
 
             db.delete(note)
             db.commit()
@@ -119,7 +119,7 @@ class NoteRepository(INoteRepository):
         with SessionLocal() as db:
             note = db.query(Note).filter(Note.user_id == user_id, Note.id == id).first()
             if not note:
-                raise HTTPException(status_code=422)
+                raise HTTPException(status_code=422, detail="Note not found")
 
             note.tags = []
             db.add(note)

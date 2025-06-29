@@ -30,7 +30,7 @@ class UserRepository(IUserRepository):
       user = db.query(User).filter(User.email == email).first()
 
       if not user:
-        raise HTTPException(status_code=422)
+        raise HTTPException(status_code=422, detail="User not found")
       
       return UserVO(**row_to_dict(user))
 
@@ -39,7 +39,7 @@ class UserRepository(IUserRepository):
       user = db.query(User).filter(User.id == id).first()
 
       if not user:
-        raise HTTPException(status_code=422)
+        raise HTTPException(status_code=422, detail="User not found")
       
       return UserVO(**row_to_dict(user))
   
@@ -48,7 +48,7 @@ class UserRepository(IUserRepository):
       user = db.query(User).filter(User.id == user_vo.id).first()
 
       if not user:
-        raise HTTPException(status_code=422)
+        raise HTTPException(status_code=422, detail="User not found")
       
       user.name = user_vo.name
       user.password = user_vo.password
@@ -74,7 +74,7 @@ class UserRepository(IUserRepository):
       user = db.query(User).filter(User.id == id).first()
 
       if not user:
-        raise HTTPException(status_code=422)
+        raise HTTPException(status_code=422, detail="User not found")
       
       db.delete(user)
       db.commit()
