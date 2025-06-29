@@ -47,6 +47,9 @@ class CurrentUser:
     id: str
     role: Role
 
+    def __str__(self):
+        return f"CurrentUser(id={self.id}, role={self.role})"
+
 def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     payload = decode_access_token(token)
 
