@@ -5,11 +5,13 @@ from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from enum import StrEnum
 from fastapi.security import OAuth2PasswordBearer
+from config import get_settings
+
+settings = get_settings()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 
-
-SECRET_KEY = "09d25e094faa6ca25567"
+SECRET_KEY = settings.jwt_secret_key
 ALGORITHM = "HS256"
 
 class Role(StrEnum):
