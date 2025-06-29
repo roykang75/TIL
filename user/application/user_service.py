@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends
 from ulid import ULID
 from datetime import datetime
-from user.domain.user import User, UserResponse
+from user.domain.user import User
 from user.domain.repository.user_repo import IUserRepository
 from user.infra.repository.user_repo import UserRepository
 from utils.crypto import Crypto
@@ -17,7 +17,7 @@ class UserService:
 
     def create_user(
         self, name: str, email: str, password: str, memo: str | None
-    ) -> UserResponse:
+    ):
         _user = None
 
         try:
@@ -41,20 +41,13 @@ class UserService:
         )
         self.user_repo.save(user)
 
-        return UserResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            memo=user.memo,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-        )
+        return user
 
-    def update_user(self, user_id: str, name: str | None, password: str | None
-                    
-                    ) -> UserResponse:
+    def update_user(
+        self, user_id: str, name: str | None, password: str | None
+    ):
         user = self.user_repo.find_by_id(user_id)
-        
+
         if name:
             user.name = name
 
@@ -64,25 +57,14 @@ class UserService:
         user.updated_at = datetime.now()
         user = self.user_repo.update(user)
 
-        return UserResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            memo=user.memo,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-        )
+        return user
 
-    def get_users(self, page: int, items_per_page: int) -> tuple[int, list[UserResponse]]:
-        total_count, users = self.user_repo.get_users(page, items_per_page)
-        return total_count, [UserResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email, 
-            memo=user.memo,
-            created_at=user.created_at,
-            updated_at=user.updated_at,
-        ) for user in users]
+    def get_users(
+        self, page: int, items_per_page: int
+    ) -> tuple[int, list[User]]:
+        users = self.user_repo.get_users(page, items_per_page)
+        return users
     
+
     def delete_user(self, user_id: str) -> bool:
         return self.user_repo.delete(user_id)

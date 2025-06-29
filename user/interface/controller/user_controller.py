@@ -1,8 +1,8 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr, Field
 from containers import Container
 from user.application.user_service import UserService
-from user.domain.user import UserResponse
 from dependency_injector.wiring import inject, Provide
 
 router = APIRouter(prefix="/users")
@@ -20,7 +20,15 @@ class UpdateUser(BaseModel):
     password: str | None = Field(min_length=8, max_length=32, default=None)
 
 
-class UsersResponse(BaseModel):
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    email: EmailStr
+    created_at: datetime
+    updated_at: datetime
+
+
+class GetUsersResponse(BaseModel):
     total_count: int
     page: int
     users: list[UserResponse]
@@ -49,7 +57,7 @@ def update_user(
     return updated_user
 
 
-@router.get("", response_model=UsersResponse)
+@router.get("", response_model=GetUsersResponse)
 @inject
 def get_users(
     page: int = 1,
@@ -57,11 +65,8 @@ def get_users(
     user_service: UserService = Depends(Provide[Container.user_service]),
 ):
     total_count, users = user_service.get_users(page, items_per_page)
-    return {
-        "total_count": total_count,
-        "page": page,
-        "users": users,
-    }
+    return GetUsersResponse(total_count=total_count, page=page, users=users)
+
 
 @router.delete("/{user_id}", status_code=204)
 @inject
